@@ -1,10 +1,13 @@
 const express = require("express");
 const controller = require("../controllers/apiKeyController");
-const adminMiddleware = require("../middleware/adminMiddleware");
-const router = express.Router();
+const requireAuth = require("../middleware/requireAuth");
+const router = express.Router({ mergeParams: true });
 
-router.post("/", adminMiddleware, controller.createKey);
-router.get("/", adminMiddleware, controller.listKeys);
-router.delete("/:id", adminMiddleware, controller.deleteKey);
+router.use(requireAuth);
+
+router.post("/", controller.createKey);
+router.get("/", controller.listKeys);
+router.delete("/:keyId", controller.revokeKey);
+router.post("/:keyId/regenerate", controller.regenerateKey);
 
 module.exports = router;

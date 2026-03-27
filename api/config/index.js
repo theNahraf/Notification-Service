@@ -10,7 +10,10 @@ const config = {
   topicNotifications: process.env.KAFKA_TOPIC_NOTIFICATIONS || "email_queue",
   topicDlq: process.env.KAFKA_TOPIC_DLQ || "email_dlq",
   rateLimitWindowSec: Number(process.env.RATE_LIMIT_WINDOW_SEC || 60),
-  rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 120)
+  rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 120),
+  jwtSecret: process.env.JWT_SECRET || "change-me-in-production",
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173"
 };
 
 module.exports = config;

@@ -1,45 +1,76 @@
-const apikeyService = require("../services/apikeyService");
+const apiKeyService = require("../services/apiKeyService");
+const projectService = require("../services/projectService");
 const logService = require("../services/logService");
+
+async function ensureProjectAccess(req, res) {
+  const project = await projectService.getProject(req.params.projectId, req.user.userId);
+  if (!project) {
+    res.status(404).json({ success: false, message: "Project not found" });
+    return null;
+  }
+  return project;
+}
 
 async function createKey(req, res, next) {
   try {
-    const { appName, ownerEmail } = req.body;
-    if (!appName) {
-      return res.status(400).json({ success: false, message: "appName is required" });
-    }
-    const data = await apikeyService.createApiKey(appName, ownerEmail);
-    await logService.writeLog("info", "api_key_created", { appName, ownerEmail: ownerEmail || null });
+    const project = await ensureProjectAccess(req, res);
+    if (!project) return;
+    const { label } = req.body;
+    const data = await apiKeyService.createApiKey(project.id, label);
+    await logService.writeLog({
+      level: "info", service: "api", event: "api_key_created",
+      userId: req.user.userId, projectId: project.id, requestId: req.requestId,
+      metadata: { label: label || "Default" }
+    });
     return res.status(201).json({ success: true, data });
   } catch (e) {
-    return next(e);
+    next(e);
   }
 }
 
 async function listKeys(req, res, next) {
   try {
-    const limit = Number(req.query.limit || 100);
-    const data = await apikeyService.listApiKeys(limit);
+    const project = await ensureProjectAccess(req, res);
+    if (!project) return;
+    const data = await apiKeyService.listApiKeys(project.id);
     return res.json({ success: true, data });
   } catch (e) {
-    return next(e);
+    next(e);
   }
 }
 
-async function deleteKey(req, res, next) {
+async function revokeKey(req, res, next) {
   try {
-    const id = Number(req.params.id);
-    if (!id) {
-      return res.status(400).json({ success: false, message: "Invalid id" });
-    }
-    const row = await apikeyService.deactivateApiKey(id);
-    if (!row) {
-      return res.status(404).json({ success: false, message: "API key not found" });
-    }
-    await logService.writeLog("info", "api_key_deactivated", { keyId: id, appName: row.app_name });
-    return res.json({ success: true, data: { id: row.id, deactivated: true } });
+    const project = await ensureProjectAccess(req, res);
+    if (!project) return;
+    const row = await apiKeyService.revokeApiKey(req.params.keyId, project.id);
+    if (!row) return res.status(404).json({ success: false, message: "API key not found" });
+    await logService.writeLog({
+      level: "info", service: "api", event: "api_key_revoked",
+      userId: req.user.userId, projectId: project.id, requestId: req.requestId,
+      metadata: { keyId: req.params.keyId }
+    });
+    return res.json({ success: true, data: { ...row, revoked: true } });
   } catch (e) {
-    return next(e);
+    next(e);
   }
 }
 
-module.exports = { createKey, listKeys, deleteKey };
+async function regenerateKey(req, res, next) {
+  try {
+    const project = await ensureProjectAccess(req, res);
+    if (!project) return;
+    const data = await apiKeyService.regenerateApiKey(req.params.keyId, project.id);
+    if (!data) return res.status(404).json({ success: false, message: "API key not found" });
+    await logService.writeLog({
+      level: "info", service: "api", event: "api_key_regenerated",
+      userId: req.user.userId, projectId: project.id, requestId: req.requestId,
+      metadata: { oldKeyId: req.params.keyId, newKeyId: data.id }
+    });
+    return res.status(201).json({ success: true, data });
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = { createKey, listKeys, revokeKey, regenerateKey };

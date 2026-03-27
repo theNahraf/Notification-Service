@@ -1,20 +1,29 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000" });
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000"
+});
 
 api.interceptors.request.use((config) => {
-  const apiKey = localStorage.getItem("notification_api_key");
-  if (apiKey) {
-    config.headers["x-api-key"] = apiKey;
-  }
-  const admin =
-    localStorage.getItem("notification_admin_secret") ||
-    import.meta.env.VITE_ADMIN_SECRET ||
-    "";
-  if (admin) {
-    config.headers["x-admin-secret"] = admin;
+  const token = localStorage.getItem("ntf_token");
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("ntf_token");
+      localStorage.removeItem("ntf_user");
+      if (window.location.pathname !== "/login" && window.location.pathname !== "/signup") {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

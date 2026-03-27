@@ -1,28 +1,62 @@
 import { useEffect, useState } from "react";
+import { useProject } from "../contexts/ProjectContext";
+import { useToast } from "../components/Toast";
 import api from "../lib/api";
 import Badge from "../components/Badge";
+import { PageLoader } from "../components/LoadingSpinner";
+import { RotateCcw, AlertTriangle } from "lucide-react";
 
 export default function DLQ() {
+  const { current } = useProject();
+  const { addToast } = useToast();
   const [items, setItems] = useState([]);
-  const [message, setMessage] = useState("");
-  const [selected, setSelected] = useState(() => new Set());
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(new Set());
   const [busy, setBusy] = useState(false);
 
   async function load() {
+    if (!current) return;
+    setLoading(true);
     try {
-      const res = await api.get("/v1/notifications/dlq?limit=100");
+      const res = await api.get(`/v1/dashboard/notifications/dlq?projectId=${current.id}&limit=100`);
       setItems(res.data.data || []);
       setSelected(new Set());
-    } catch (e) {
-      setMessage(e.response?.data?.message || "Failed to fetch DLQ");
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
     }
   }
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { load(); }, [current?.id]);
 
-  function toggle(id) {
+  async function requeueSingle(id) {
+    try {
+      await api.post(`/v1/dashboard/notifications/dlq/${id}/requeue?projectId=${current.id}`);
+      addToast(`Requeued ${id}`, "success");
+      await load();
+    } catch (e) {
+      addToast(e.response?.data?.message || "Requeue failed", "error");
+    }
+  }
+
+  async function requeueBulk() {
+    if (!selected.size) return;
+    setBusy(true);
+    try {
+      const res = await api.post(`/v1/dashboard/notifications/dlq/requeue-bulk?projectId=${current.id}`, {
+        ids: [...selected]
+      });
+      addToast(`Requeued ${res.data.data?.count || 0} notifications`, "success");
+      await load();
+    } catch (e) {
+      addToast(e.response?.data?.message || "Bulk requeue failed", "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function toggleSelect(id) {
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -31,110 +65,94 @@ export default function DLQ() {
     });
   }
 
-  function selectAll() {
+  function toggleAll() {
     if (selected.size === items.length) setSelected(new Set());
     else setSelected(new Set(items.map((i) => i.id)));
   }
 
-  async function requeueOne(id) {
-    setBusy(true);
-    setMessage("");
-    try {
-      await api.post(`/v1/notifications/dlq/${id}/requeue`);
-      await load();
-    } catch (e) {
-      setMessage(e.response?.data?.message || "Requeue failed");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function requeueBulk() {
-    const ids = [...selected];
-    if (!ids.length) return;
-    setBusy(true);
-    setMessage("");
-    try {
-      const res = await api.post("/v1/notifications/dlq/requeue-bulk", { ids });
-      const d = res.data.data;
-      setMessage(`Requeued ${d.count}. Skipped: ${d.skipped?.length || 0}.`);
-      await load();
-    } catch (e) {
-      setMessage(e.response?.data?.message || "Bulk requeue failed");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Dead letter queue</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Messages that exceeded retry limits. Requeue sends them back to the processing pipeline for your tenant.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">Dead Letter Queue</h1>
+        <p className="mt-1 text-sm text-ink-muted">Failed notifications that exceeded retry limits.</p>
       </div>
 
       <div className="card">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" className="btn btn-secondary text-sm" onClick={load} disabled={busy}>
-              Refresh
-            </button>
-            <button type="button" className="btn btn-primary text-sm" onClick={requeueBulk} disabled={busy || !selected.size}>
-              Requeue selected ({selected.size})
-            </button>
-            <button type="button" className="btn btn-secondary text-sm" onClick={selectAll}>
-              {selected.size === items.length && items.length ? "Clear selection" : "Select all"}
-            </button>
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span className="text-sm font-medium">{items.length} failed notification{items.length !== 1 ? "s" : ""}</span>
           </div>
-          <Badge variant="danger">Failed</Badge>
+          <div className="flex gap-2">
+            <button onClick={load} className="btn btn-secondary text-sm">Refresh</button>
+            {selected.size > 0 && (
+              <button onClick={requeueBulk} disabled={busy} className="btn btn-primary text-sm gap-1">
+                <RotateCcw className="h-4 w-4" />
+                Retry selected ({selected.size})
+              </button>
+            )}
+          </div>
         </div>
-        {message && <p className="mb-4 text-sm text-ink">{message}</p>}
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th className="w-10" />
-                <th>Notification</th>
-                <th>Error</th>
-                <th className="w-32">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((n) => (
-                <tr key={n.id}>
-                  <td>
+
+        {loading ? <PageLoader /> : (
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="w-10">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-surface-border"
-                      checked={selected.has(n.id)}
-                      onChange={() => toggle(n.id)}
+                      checked={items.length > 0 && selected.size === items.length}
+                      onChange={toggleAll}
+                      className="h-4 w-4 rounded border-neutral-300"
                     />
-                  </td>
-                  <td>
-                    <div className="font-mono text-xs text-ink">{n.id}</div>
-                    <div className="text-xs text-ink-muted">{n.recipient_email}</div>
-                  </td>
-                  <td className="max-w-md truncate text-xs text-red-800" title={n.error_message}>
-                    {n.error_message || "—"}
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn btn-secondary px-2 py-1 text-xs"
-                      disabled={busy}
-                      onClick={() => requeueOne(n.id)}
-                    >
-                      Requeue
-                    </button>
-                  </td>
+                  </th>
+                  <th>ID</th>
+                  <th>Recipient</th>
+                  <th>Subject</th>
+                  <th>Attempts</th>
+                  <th>Error</th>
+                  <th>Failed At</th>
+                  <th className="w-24">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {!items.length && <p className="py-8 text-center text-sm text-ink-muted">No dead-letter items for this key.</p>}
+              </thead>
+              <tbody>
+                {items.map((n) => (
+                  <tr key={n.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selected.has(n.id)}
+                        onChange={() => toggleSelect(n.id)}
+                        className="h-4 w-4 rounded border-neutral-300"
+                      />
+                    </td>
+                    <td className="font-mono text-xs">{n.id?.slice(0, 14)}…</td>
+                    <td className="max-w-[160px] truncate">{n.recipient_email}</td>
+                    <td className="max-w-[180px] truncate text-xs">{n.subject}</td>
+                    <td className="tabular-nums">{n.attempts}</td>
+                    <td className="max-w-[200px] truncate text-xs text-red-600">{n.error_message}</td>
+                    <td className="whitespace-nowrap text-xs text-ink-muted">
+                      {n.processed_at ? new Date(n.processed_at).toLocaleString() : "—"}
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => requeueSingle(n.id)}
+                        className="inline-flex items-center gap-1 text-xs font-medium text-ink hover:underline"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Retry
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {!loading && !items.length && (
+          <p className="py-8 text-center text-sm text-ink-muted">🎉 No failed notifications. All clear!</p>
+        )}
       </div>
     </div>
   );

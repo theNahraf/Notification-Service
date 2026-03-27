@@ -2,6 +2,14 @@ const logService = require("../services/logService");
 
 module.exports = function errorHandler(err, req, res, next) {
   req.log?.error({ err }, "unhandled_error");
-  logService.writeLog("error", "unhandled_error", { message: err.message }).catch(() => {});
-  res.status(500).json({ success: false, message: "Internal server error" });
+  logService.writeLog({
+    level: "error",
+    service: "api",
+    event: "unhandled_error",
+    requestId: req.requestId,
+    userId: req.user?.userId || null,
+    projectId: req.projectId || null,
+    metadata: { message: err.message, stack: err.stack }
+  }).catch(() => {});
+  res.status(err.statusCode || 500).json({ success: false, message: err.message || "Internal server error" });
 };

@@ -1,0 +1,12 @@
+{
+  "name": "notify-saas-sdk",
+  "version": "1.0.0",
+  "description": "Node.js SDK for NotifyStack SaaS notification platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\""
+  },
+  "keywords": ["notifications", "email", "saas", "sdk"],
+  "license": "MIT",
+  "dependencies": {}
+}
