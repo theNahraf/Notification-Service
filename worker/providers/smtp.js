@@ -6,7 +6,7 @@ class SmtpProvider {
     this.transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
-      secure: config.port === 465,
+      secure: config.port === 465 || config.port === 2465,
       auth: { user: config.user, pass: config.pass },
       connectionTimeout: 30000,
       greetingTimeout: 30000,
