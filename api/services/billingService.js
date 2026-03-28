@@ -126,6 +126,28 @@ async function handleWebhookEvent(event) {
   }
 }
 
+async function syncSubscription(subscriptionId) {
+  const rzp = getRazorpay();
+  if (!rzp) throw Object.assign(new Error("Razorpay not configured"), { statusCode: 503 });
+
+  const sub = await rzp.subscriptions.fetch(subscriptionId);
+  if (!sub) throw Object.assign(new Error("Subscription not found in Razorpay"), { statusCode: 404 });
+
+  if (sub.status === "active" || sub.status === "authenticated" || sub.status === "created") {
+    const { userId, planId } = sub.notes;
+    if (userId && planId) {
+      await pool.query("UPDATE users SET plan = $1 WHERE id = $2", [planId, userId]);
+      await pool.query(`
+        UPDATE subscriptions 
+        SET status = 'active', current_period_end = to_timestamp($1), updated_at = NOW()
+        WHERE razorpay_subscription_id = $2
+      `, [sub.current_end, sub.id]);
+      return { status: "active", plan: planId };
+    }
+  }
+  return { status: sub.status };
+}
+
 async function getInvoices(userId) {
   const rzp = getRazorpay();
   if (!rzp) return [];
@@ -146,4 +168,4 @@ async function getInvoices(userId) {
   } catch { return []; }
 }
 
-module.exports = { getPlans, getUserPlan, createCheckoutSession, cancelSubscription, handleWebhookEvent, getInvoices };
+module.exports = { getPlans, getUserPlan, createCheckoutSession, cancelSubscription, handleWebhookEvent, getInvoices, syncSubscription };

@@ -4,6 +4,7 @@ import api from "../lib/api";
 import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
 import { PageLoader } from "../components/LoadingSpinner";
+import CustomSelect from "../components/CustomSelect";
 import { ChevronDown, ChevronRight, Download, Search, Filter, RefreshCw, AlertCircle, AlertTriangle, Info, XCircle } from "lucide-react";
 
 export default function Logs() {
@@ -118,7 +119,7 @@ export default function Logs() {
   const totalPages = Math.ceil((data.total || 0) / limit);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-ink">Activity Logs</h1>
@@ -140,20 +141,34 @@ export default function Logs() {
         <div className="flex flex-wrap items-end gap-3 mb-5 pb-5 border-b border-surface-border">
           <div>
             <label className="label">Level</label>
-            <select className="input w-32" value={level} onChange={(e) => setLevel(e.target.value)}>
-              <option value="">All levels</option>
-              <option value="info">Info</option>
-              <option value="warn">Warning</option>
-              <option value="error">Error</option>
-            </select>
+            <div className="relative">
+              <CustomSelect
+                className="w-32"
+                value={level}
+                onChange={setLevel}
+                options={[
+                  { label: "All levels", value: "" },
+                  { label: "Info", value: "info" },
+                  { label: "Warning", value: "warn" },
+                  { label: "Error", value: "error" }
+                ]}
+              />
+            </div>
           </div>
           <div>
             <label className="label">Service</label>
-            <select className="input w-32" value={service} onChange={(e) => setService(e.target.value)}>
-              <option value="">All</option>
-              <option value="api">API</option>
-              <option value="worker">Worker</option>
-            </select>
+            <div className="relative">
+              <CustomSelect
+                className="w-32"
+                value={service}
+                onChange={setService}
+                options={[
+                  { label: "All", value: "" },
+                  { label: "API", value: "api" },
+                  { label: "Worker", value: "worker" }
+                ]}
+              />
+            </div>
           </div>
           <div className="min-w-[200px] flex-1">
             <label className="label">Search</label>

@@ -47,7 +47,7 @@ export default function App() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/" element={<PublicOnly><Landing /></PublicOnly>} />
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
 

@@ -55,6 +55,19 @@ router.post("/cancel", async (req, res, next) => {
   }
 });
 
+// Verify Subscription (Used manually after Checkout for testing locally)
+router.post("/verify-subscription", async (req, res, next) => {
+  try {
+    const { subscriptionId } = req.body;
+    if (!subscriptionId) return res.status(400).json({ error: "Missing subscriptionId" });
+    const data = await billingService.syncSubscription(subscriptionId);
+    res.json({ success: true, data });
+  } catch (e) {
+    if (e.statusCode) return res.status(e.statusCode).json({ success: false, message: e.message });
+    next(e);
+  }
+});
+
 // Invoice history
 router.get("/invoices", async (req, res, next) => {
   try {

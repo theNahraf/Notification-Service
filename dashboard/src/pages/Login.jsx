@@ -87,7 +87,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-ink flex items-center justify-center p-4">
-      <div className="w-full max-w-md animate-fade-in">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white mb-4">
             <Bell className="h-6 w-6 text-ink" />

@@ -12,14 +12,21 @@ export default function LoadingSpinner({ size = "md", className = "" }) {
   );
 }
 
+import { motion } from "framer-motion";
+
 export function PageLoader() {
   return (
-    <div className="flex items-center justify-center py-20">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.4, duration: 0.3 }}
+      className="flex items-center justify-center py-20"
+    >
       <div className="text-center space-y-3">
         <LoadingSpinner size="lg" />
         <p className="text-sm text-ink-muted animate-pulse">Loading…</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

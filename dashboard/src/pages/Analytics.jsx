@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useProject } from "../contexts/ProjectContext";
 import api from "../lib/api";
 import { PageLoader } from "../components/LoadingSpinner";
+import CustomSelect from "../components/CustomSelect";
 import { BarChart3, TrendingUp, Activity, Zap, Clock, Mail, MessageSquare, Smartphone, AlertTriangle, CheckCircle } from "lucide-react";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
@@ -61,18 +62,23 @@ export default function Analytics() {
   const channelIcons = { email: Mail, sms: MessageSquare, push: Smartphone };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-ink">Analytics</h1>
           <p className="mt-1 text-sm text-ink-muted">Notification delivery performance and insights.</p>
         </div>
-        <select className="input w-40" value={range} onChange={e => setRange(e.target.value)}>
-          <option value="7">Last 7 days</option>
-          <option value="14">Last 14 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
-        </select>
+        <CustomSelect
+          className="w-40"
+          value={range}
+          onChange={setRange}
+          options={[
+            { label: "Last 7 days", value: "7" },
+            { label: "Last 14 days", value: "14" },
+            { label: "Last 30 days", value: "30" },
+            { label: "Last 90 days", value: "90" }
+          ]}
+        />
       </div>
 
       {/* Stat cards */}

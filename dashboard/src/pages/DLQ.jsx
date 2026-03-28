@@ -71,7 +71,7 @@ export default function DLQ() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Dead Letter Queue</h1>
         <p className="mt-1 text-sm text-ink-muted">Failed notifications that exceeded retry limits.</p>

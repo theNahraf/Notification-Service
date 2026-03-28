@@ -13,7 +13,10 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    if (!current) return;
+    if (!current) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     Promise.all([
       api.get(`/v1/dashboard/notifications?projectId=${current.id}&limit=200`),
@@ -32,7 +35,7 @@ export default function Dashboard() {
   const metrics = stats || { queued: 0, sent: 0, failed: 0, total: 0 };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Overview</h1>
         <p className="mt-1 text-sm text-ink-muted">
@@ -70,7 +73,7 @@ export default function Dashboard() {
             <Bell className="h-5 w-5 text-ink-muted" />
             <h2 className="text-lg font-semibold">Recent Notifications</h2>
           </div>
-          <Link to="/notifications" className="btn btn-secondary gap-1 text-sm">
+          <Link to="/dashboard/notifications" className="btn btn-secondary gap-1 text-sm">
             View all <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

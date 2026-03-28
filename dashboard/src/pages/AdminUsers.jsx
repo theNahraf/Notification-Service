@@ -36,7 +36,7 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">All Users</h1>
         <p className="mt-1 text-sm text-ink-muted">Admin view — manage all platform users.</p>

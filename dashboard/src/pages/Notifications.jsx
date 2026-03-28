@@ -4,6 +4,7 @@ import api from "../lib/api";
 import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
 import { PageLoader } from "../components/LoadingSpinner";
+import CustomSelect from "../components/CustomSelect";
 
 export default function Notifications() {
   const { current } = useProject();
@@ -31,7 +32,7 @@ export default function Notifications() {
   useEffect(() => { load(); }, [current?.id, offset, status]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Notifications</h1>
         <p className="mt-1 text-sm text-ink-muted">All notifications for this project.</p>
@@ -41,13 +42,18 @@ export default function Notifications() {
         <div className="flex flex-wrap items-end gap-4 mb-4">
           <div>
             <label className="label">Status</label>
-            <select className="input w-40" value={status} onChange={(e) => { setStatus(e.target.value); setOffset(0); }}>
-              <option value="">All</option>
-              <option value="queued">Queued</option>
-              <option value="sent">Sent</option>
-              <option value="failed">Failed</option>
-              <option value="retrying">Retrying</option>
-            </select>
+            <CustomSelect
+              className="w-40"
+              value={status}
+              onChange={(val) => { setStatus(val); setOffset(0); }}
+              options={[
+                { label: "All statuses", value: "" },
+                { label: "Queued", value: "queued" },
+                { label: "Sent", value: "sent" },
+                { label: "Failed", value: "failed" },
+                { label: "Retrying", value: "retrying" }
+              ]}
+            />
           </div>
           <button className="btn btn-primary" onClick={load}>Refresh</button>
         </div>

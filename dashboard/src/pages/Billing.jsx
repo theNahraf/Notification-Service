@@ -59,8 +59,17 @@ export default function Billing() {
         name: "NotifyStack",
         description: "SaaS Subscription",
         handler: async function (response) {
-          addToast("Payment successful! Please wait while we process...", "success");
-          setTimeout(() => load(), 3000);
+          addToast("Payment successful! Verifying subscription...", "success");
+          try {
+            await api.post("/v1/billing/verify-subscription", {
+              subscriptionId: response.razorpay_subscription_id || subscriptionId
+            });
+            addToast("Subscription verified and activated!", "success");
+            load();
+          } catch (err) {
+            addToast("Payment succeeded, but verification failed. Please contact support.", "error");
+            load();
+          }
         },
         theme: { color: "#0a0a0a" }
       };
@@ -92,7 +101,7 @@ export default function Billing() {
   const usagePct = usage ? parseFloat(usage.percentUsed) : 0;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Billing & Usage</h1>
         <p className="mt-1 text-sm text-ink-muted">Manage your subscription and track notification usage.</p>

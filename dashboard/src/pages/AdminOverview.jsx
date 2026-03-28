@@ -126,7 +126,7 @@ export default function AdminOverview() {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">System Overview</h1>
         <p className="mt-1 text-sm text-ink-muted">Platform-wide metrics and analytics.</p>

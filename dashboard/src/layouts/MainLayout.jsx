@@ -8,6 +8,7 @@ import {
   BarChart3, ShieldAlert, TrendingUp, CreditCard, Menu, X
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -64,8 +65,8 @@ export default function MainLayout() {
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                active ? "bg-ink text-white shadow-sm" : "text-ink-muted hover:bg-surface-muted hover:text-ink"
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                active ? "bg-neutral-100/80 text-ink" : "text-ink-muted hover:bg-neutral-50 hover:text-ink"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -76,8 +77,8 @@ export default function MainLayout() {
 
         {isAdmin && (
           <>
-            <div className="my-2 border-t border-surface-border" />
-            <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-ink-subtle">Admin</p>
+            <div className="my-4 border-t border-surface-border" />
+            <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-ink-subtle">Admin</p>
             {adminNav.map(({ to, label, icon: Icon }) => {
               const active = location.pathname.startsWith(to);
               return (
@@ -85,8 +86,8 @@ export default function MainLayout() {
                   key={to}
                   to={to}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    active ? "bg-amber-50 text-amber-800 border border-amber-200" : "text-ink-muted hover:bg-surface-muted hover:text-ink"
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    active ? "bg-amber-50 text-amber-900" : "text-ink-muted hover:bg-neutral-50 hover:text-ink"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -100,139 +101,190 @@ export default function MainLayout() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-surface-muted">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-surface-border bg-ink text-white">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 sm:px-6 py-3.5">
-          <div className="flex items-center gap-4 sm:gap-6">
-            {/* Mobile menu */}
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1">
-              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+  const ProjectSelectDropdown = () => (
+    <div className="relative w-full">
+      <button
+        onClick={() => setProjectOpen(!projectOpen)}
+        className="flex w-full items-center justify-between gap-2 rounded-md border border-surface-border bg-white px-3 py-2 text-sm text-ink hover:bg-neutral-50 transition-colors shadow-sm"
+      >
+        <div className="flex items-center gap-2 overflow-hidden">
+          <div className="bg-ink text-white p-1 rounded">
+            <FolderOpen className="h-3.5 w-3.5" />
+          </div>
+          <span className="truncate font-medium">{current?.name || "Select project"}</span>
+        </div>
+        <ChevronDown className="h-3.5 w-3.5 text-ink-subtle shrink-0" />
+      </button>
 
-            <Link to="/dashboard" className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white">
-                <Bell className="h-4 w-4 text-ink" />
-              </div>
-              <span className="text-lg font-semibold tracking-tight hidden sm:block">NotifyStack</span>
-            </Link>
-
-            {/* Project selector */}
-            {!isAdminPage && (
-              <div className="relative">
-                <button
-                  onClick={() => setProjectOpen(!projectOpen)}
-                  className="flex items-center gap-2 rounded-lg border border-neutral-700 bg-neutral-800/50 px-3 py-1.5 text-sm text-neutral-200 hover:bg-neutral-700/50 transition-colors"
-                >
-                  <FolderOpen className="h-3.5 w-3.5" />
-                  <span className="max-w-[120px] sm:max-w-[160px] truncate">{current?.name || "Select project"}</span>
-                  <ChevronDown className="h-3.5 w-3.5" />
-                </button>
-
-                {projectOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setProjectOpen(false)} />
-                    <div className="absolute left-0 top-full mt-2 z-20 w-64 rounded-xl border border-surface-border bg-white p-2 shadow-xl animate-fade-in">
-                      {projects.map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => { selectProject(p); setProjectOpen(false); }}
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-left transition-colors",
-                            p.id === current?.id ? "bg-ink text-white" : "text-ink hover:bg-surface-muted"
-                          )}
-                        >
-                          <FolderOpen className="h-3.5 w-3.5 shrink-0" />
-                          <span className="truncate">{p.name}</span>
-                        </button>
-                      ))}
-                      {!creating ? (
-                        <button
-                          onClick={() => setCreating(true)}
-                          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-muted hover:bg-surface-muted transition-colors"
-                        >
-                          <Plus className="h-3.5 w-3.5" />
-                          New project
-                        </button>
-                      ) : (
-                        <form onSubmit={handleCreateProject} className="flex gap-2 p-2">
-                          <input
-                            autoFocus
-                            className="input text-xs"
-                            placeholder="Project name"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                          />
-                          <button type="submit" className="btn btn-primary text-xs !px-3">Add</button>
-                        </form>
-                      )}
-                    </div>
-                  </>
+      {projectOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setProjectOpen(false)} />
+          <div className="absolute left-0 top-full mt-1.5 z-50 w-full rounded-lg border border-surface-border bg-white p-1.5 shadow-xl animate-fade-in">
+            {projects.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => { selectProject(p); setProjectOpen(false); }}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-left transition-colors",
+                  p.id === current?.id ? "bg-neutral-100 text-ink font-medium" : "text-ink-muted hover:bg-neutral-50 hover:text-ink"
                 )}
-              </div>
-            )}
-
-            {isAdminPage && (
-              <div className="flex items-center gap-2 rounded-lg border border-amber-600/30 bg-amber-900/20 px-3 py-1.5 text-sm text-amber-300">
-                <ShieldAlert className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Admin Panel</span>
-              </div>
+              >
+                <FolderOpen className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{p.name}</span>
+              </button>
+            ))}
+            <div className="my-1 border-t border-surface-border" />
+            {!creating ? (
+              <button
+                onClick={() => setCreating(true)}
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-ink hover:bg-neutral-50 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                New project
+              </button>
+            ) : (
+              <form onSubmit={handleCreateProject} className="flex gap-2 p-1">
+                <input
+                  autoFocus
+                  className="input text-xs !py-1.5"
+                  placeholder="Project name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                />
+                <button type="submit" className="btn btn-primary text-xs !px-3 !py-1.5">Add</button>
+              </form>
             )}
           </div>
+        </>
+      )}
+    </div>
+  );
 
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">{user?.name}</p>
-              <p className="text-xs text-neutral-400">{user?.plan || "FREE"} · {user?.role}</p>
+  return (
+    <div className="flex h-screen bg-surface-muted overflow-hidden">
+      
+      {/* Sidebar (Desktop) */}
+      <aside className="hidden lg:flex w-[260px] flex-col border-r border-surface-border bg-white z-20 shrink-0">
+        
+        {/* Top brand */}
+        <div className="h-[60px] flex items-center px-5 border-b border-surface-border shrink-0">
+          <Link to="/" title="Go to Landing Page" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="flex h-7 w-7 items-center justify-center rounded bg-ink shadow-sm">
+              <Bell className="h-3.5 w-3.5 text-white" />
+            </div>
+            <span className="text-[15px] font-semibold tracking-tight text-ink">NotifyStack</span>
+          </Link>
+        </div>
+
+        {/* Project Switcher */}
+        {!isAdminPage && (
+          <div className="px-3 pt-4 pb-2 shrink-0">
+            <ProjectSelectDropdown />
+          </div>
+        )}
+        {isAdminPage && (
+          <div className="px-3 py-4 shrink-0">
+            <div className="flex items-center gap-2 rounded-md border border-amber-500/30 bg-amber-50 px-3 py-2 text-sm text-amber-800 font-medium">
+              <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0" />
+              <span>Admin Panel</span>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation Links */}
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5">
+          <NavItems />
+        </nav>
+
+        {/* User profile bottom */}
+        <div className="mt-auto p-4 border-t border-surface-border shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="truncate pr-2">
+              <p className="text-sm font-medium text-ink truncate">{user?.name}</p>
+              <p className="text-xs text-ink-muted truncate">{user?.plan || "FREE"} · {user?.role}</p>
             </div>
             <button
               onClick={logout}
-              className="flex items-center gap-2 rounded-lg border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 hover:bg-neutral-800 transition-colors"
+              className="p-1.5 text-ink-muted hover:text-ink hover:bg-neutral-100 rounded-md transition-colors shrink-0"
+              title="Logout"
             >
               <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
-      </header>
+      </aside>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-20 lg:hidden" onClick={() => setSidebarOpen(false)}>
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white p-4 shadow-xl overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <nav className="space-y-1 mt-2">
-              <NavItems />
-            </nav>
-          </div>
-        </div>
-      )}
-
-      {/* Body */}
-      <div className="mx-auto grid max-w-[1400px] gap-6 lg:gap-8 px-4 py-6 lg:grid-cols-[240px_1fr] lg:px-6 lg:py-8">
-        {/* Sidebar (desktop) */}
-        <aside className="hidden lg:block h-fit space-y-2 lg:sticky lg:top-24">
-          <nav className="card space-y-1 p-2">
-            <NavItems />
-          </nav>
-        </aside>
-
-        {/* Main */}
-        <main className="min-w-0 space-y-6 animate-fade-in">
-          {needsProject && !current ? (
-            <div className="card text-center py-16">
-              <FolderOpen className="mx-auto h-12 w-12 text-ink-subtle mb-4" />
-              <h2 className="text-lg font-semibold text-ink">No project selected</h2>
-              <p className="mt-2 text-sm text-ink-muted">Create or select a project to get started.</p>
-              <Link to="/dashboard/projects" className="btn btn-primary mt-6 gap-2">
-                <Plus className="h-4 w-4" />
-                Go to Projects
-              </Link>
+      {/* Main Column */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
+        
+        {/* Mobile Header */}
+        <header className="lg:hidden h-14 shrink-0 border-b border-surface-border bg-white flex items-center justify-between px-4 z-30">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1 -ml-1 text-ink-muted hover:text-ink">
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="flex h-7 w-7 items-center justify-center rounded bg-ink shadow-sm">
+              <Bell className="h-3.5 w-3.5 text-white" />
             </div>
-          ) : (
-            <Outlet />
-          )}
+          </div>
+          <button onClick={logout} className="text-xs font-medium text-ink-muted border rounded px-2 py-1">
+            Logout
+          </button>
+        </header>
+
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <motion.div 
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ ease: "easeOut", duration: 0.2 }}
+              className="relative w-[280px] bg-white h-full flex flex-col shadow-2xl"
+            >
+              <div className="h-14 flex items-center justify-between border-b border-surface-border px-4 shrink-0">
+                <span className="font-semibold text-ink">NotifyStack</span>
+                <button onClick={() => setSidebarOpen(false)} className="p-1 text-ink-muted">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              {!isAdminPage && <div className="p-3 border-b border-surface-border"><ProjectSelectDropdown /></div>}
+              <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1" onClick={() => setSidebarOpen(false)}>
+                <NavItems />
+              </nav>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Page Content Viewport */}
+        <main className="flex-1 overflow-y-auto w-full relative">
+          <div className="mx-auto max-w-[1200px] p-4 sm:p-6 lg:p-8 w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="space-y-6"
+              >
+                {needsProject && !current ? (
+                  <div className="card text-center py-16">
+                    <FolderOpen className="mx-auto h-12 w-12 text-ink-subtle mb-4" />
+                    <h2 className="text-lg font-semibold text-ink">No project selected</h2>
+                    <p className="mt-2 text-sm text-ink-muted">Create or select a project to get started.</p>
+                    <button onClick={() => setProjectOpen(true)} className="btn btn-primary mt-6 gap-2">
+                      <Plus className="h-4 w-4" />
+                      Select a Project
+                    </button>
+                  </div>
+                ) : (
+                  <Outlet />
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </main>
       </div>
     </div>

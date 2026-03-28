@@ -1,5 +1,7 @@
-import { Link } from "react-router-dom";
-import { Bell, Zap, Shield, BarChart3, Code, Globe, Mail, MessageSquare, Smartphone, ArrowRight, Check, ChevronRight, Star } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { Bell, Zap, Shield, BarChart3, Code, Globe, Mail, MessageSquare, Smartphone, ArrowRight, Check, ChevronRight, Star, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
 
 const features = [
   { icon: Mail, title: "Multi-Channel", desc: "Email, SMS, and Push notifications from one API." },
@@ -23,6 +25,14 @@ const steps = [
 ];
 
 export default function Landing() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/");
+  }
+
   return (
     <div className="min-h-screen bg-white text-ink overflow-hidden">
       {/* Nav */}
@@ -40,10 +50,23 @@ export default function Landing() {
             <a href="#how-it-works" className="hover:text-ink transition-colors">How it works</a>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/login" className="text-sm font-medium text-ink-muted hover:text-ink transition-colors hidden sm:block">Sign in</Link>
-            <Link to="/signup" className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-all active:scale-[0.98]">
-              Get Started <ArrowRight className="h-4 w-4" />
-            </Link>
+            {user ? (
+              <>
+                <button onClick={handleLogout} className="text-sm font-medium text-ink-muted hover:text-ink transition-colors hidden sm:flex items-center gap-1.5">
+                  <LogOut className="h-4 w-4" /> Logout
+                </button>
+                <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-all active:scale-[0.98]">
+                  Dashboard <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-sm font-medium text-ink-muted hover:text-ink transition-colors hidden sm:block">Sign in</Link>
+                <Link to="/signup" className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-white hover:bg-neutral-800 transition-all active:scale-[0.98]">
+                  Get Started <ArrowRight className="h-4 w-4" />
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -53,7 +76,12 @@ export default function Landing() {
         <div className="absolute inset-0 -z-10 overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-gradient-to-br from-neutral-100 via-neutral-50 to-white blur-3xl" />
         </div>
-        <div className="mx-auto max-w-4xl text-center">
+        <motion.div 
+          className="mx-auto max-w-4xl text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
           <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-1.5 text-xs font-medium text-ink-muted mb-8">
             <Star className="h-3.5 w-3.5 text-amber-500" />
             <span>Production-grade notification infrastructure</span>
@@ -66,9 +94,15 @@ export default function Landing() {
             Built for developers who need reliability, not complexity.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/signup" className="inline-flex items-center gap-2 rounded-xl bg-ink px-8 py-3.5 text-base font-semibold text-white hover:bg-neutral-800 transition-all shadow-lg shadow-neutral-200 active:scale-[0.98]">
-              Start for Free <ArrowRight className="h-5 w-5" />
-            </Link>
+            {user ? (
+              <Link to="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-ink px-8 py-3.5 text-base font-semibold text-white hover:bg-neutral-800 transition-all shadow-lg shadow-neutral-200 active:scale-[0.98]">
+                Go to Dashboard <ArrowRight className="h-5 w-5" />
+              </Link>
+            ) : (
+              <Link to="/signup" className="inline-flex items-center gap-2 rounded-xl bg-ink px-8 py-3.5 text-base font-semibold text-white hover:bg-neutral-800 transition-all shadow-lg shadow-neutral-200 active:scale-[0.98]">
+                Start for Free <ArrowRight className="h-5 w-5" />
+              </Link>
+            )}
             <a href="#how-it-works" className="inline-flex items-center gap-2 rounded-xl border-2 border-neutral-200 px-8 py-3.5 text-base font-semibold text-ink hover:border-neutral-400 transition-all">
               See how it works
             </a>
@@ -78,10 +112,15 @@ export default function Landing() {
             <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-emerald-500" /> 1,000 free/mo</span>
             <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-emerald-500" /> Setup in 5 min</span>
           </div>
-        </div>
+        </motion.div>
 
         {/* Code snippet */}
-        <div className="mt-16 mx-auto max-w-2xl">
+        <motion.div 
+          className="mt-16 mx-auto max-w-2xl"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+        >
           <div className="rounded-2xl border border-neutral-200 bg-neutral-950 p-6 shadow-2xl shadow-neutral-200/50">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-3 h-3 rounded-full bg-red-400" />
@@ -97,10 +136,10 @@ export default function Landing() {
   <span className="text-neutral-400">email:</span> <span className="text-green-400">"user@example.com"</span>,{"\n"}
   <span className="text-neutral-400">name:</span>  <span className="text-green-400">"Ayush"</span>{"\n"}
 {"}"});{"\n\n"}
-<span className="text-neutral-500">{"// ✓ Email sent via SendGrid (247ms)"}</span>
+<span className="text-neutral-500">{"// ✓ Email sent via SendGrid"}</span>
             </pre>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Channel badges */}
@@ -125,29 +164,48 @@ export default function Landing() {
       </section>
 
       {/* Features */}
-      <section id="features" className="px-6 py-20 bg-neutral-50">
-        <div className="mx-auto max-w-6xl">
+      <section id="features" className="px-6 py-20 bg-neutral-50 overflow-hidden">
+        <motion.div 
+          className="mx-auto max-w-6xl"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Everything you need</h2>
             <p className="mt-4 text-ink-muted max-w-lg mx-auto">Built for scale from day one. No vendor lock-in.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map(f => (
-              <div key={f.title} className="rounded-2xl border border-neutral-200 bg-white p-7 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+            {features.map((f, i) => (
+              <motion.div 
+                key={f.title} 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className="rounded-2xl border border-neutral-200 bg-white p-7 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+              >
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 mb-5">
                   <f.icon className="h-6 w-6 text-ink" />
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
                 <p className="text-sm text-ink-muted leading-relaxed">{f.desc}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
+      <section id="how-it-works" className="px-6 py-20 overflow-hidden">
+        <motion.div 
+          className="mx-auto max-w-4xl"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Up and running in minutes</h2>
             <p className="mt-4 text-ink-muted">Three steps to your first notification.</p>
@@ -163,21 +221,34 @@ export default function Landing() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="px-6 py-20 bg-neutral-50">
-        <div className="mx-auto max-w-5xl">
+      <section id="pricing" className="px-6 py-20 bg-neutral-50 overflow-hidden">
+        <motion.div 
+          className="mx-auto max-w-5xl"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.5 }}
+        >
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Simple, transparent pricing</h2>
             <p className="mt-4 text-ink-muted">Start free. Scale as you grow.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-3">
-            {plans.map(p => (
-              <div key={p.id} className={`relative rounded-2xl border-2 p-8 transition-all duration-300 hover:shadow-xl ${
-                p.popular ? "border-ink bg-white shadow-lg scale-[1.02]" : "border-neutral-200 bg-white"
-              }`}>
+            {plans.map((p, i) => (
+              <motion.div 
+                key={p.id} 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                className={`relative rounded-2xl border-2 p-8 transition-all duration-300 hover:shadow-xl ${
+                  p.popular ? "border-ink bg-white shadow-lg scale-[1.02]" : "border-neutral-200 bg-white"
+                }`}
+              >
                 {p.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-ink px-4 py-1 text-xs font-semibold text-white">
                     Most Popular
@@ -206,10 +277,10 @@ export default function Landing() {
                 >
                   {p.cta} <ChevronRight className="h-4 w-4" />
                 </Link>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* CTA */}
