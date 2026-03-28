@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../lib/api";
+import { useToast } from "../components/Toast";
 
 const AuthContext = createContext(null);
 
@@ -58,11 +59,14 @@ export function AuthProvider({ children }) {
     setUser(userData);
   }
 
+  const { addToast } = useToast();
+
   function logout() {
     localStorage.removeItem("ntf_token");
     localStorage.removeItem("ntf_user");
     localStorage.removeItem("ntf_project");
     setUser(null);
+    addToast("Logged out successfully", "success");
   }
 
   return (
