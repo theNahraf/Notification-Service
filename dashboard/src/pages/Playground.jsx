@@ -3,7 +3,7 @@ import { useProject } from "../contexts/ProjectContext";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../lib/api";
 import { NotificationBell } from "../components/NotificationBell";
-import { Card } from "../components/ui/Card";
+import { Card } from "../components/ui/card";
 import { Terminal, Send, Play, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
 

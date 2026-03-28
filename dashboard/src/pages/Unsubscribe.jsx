@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Card } from "../components/ui/Card";
+import { Card } from "../components/ui/card";
 import { MailX } from "lucide-react";
 
 export default function Unsubscribe() {
