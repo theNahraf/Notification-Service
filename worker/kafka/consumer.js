@@ -20,7 +20,12 @@ function getRetryDelay(attempt) {
 }
 
 async function runConsumer() {
-  const kafka = new Kafka({ clientId: config.kafkaClientId, brokers: config.kafkaBrokers });
+  const kafka = new Kafka({ 
+    clientId: config.kafkaClientId, 
+    brokers: config.kafkaBrokers,
+    ssl: config.kafkaSsl,
+    sasl: config.kafkaSasl
+  });
   const consumer = kafka.consumer({ groupId: config.groupId });
 
   await consumer.connect();

@@ -8,6 +8,12 @@ module.exports = {
   topicNotifications: process.env.KAFKA_TOPIC_NOTIFICATIONS || "email_queue",
   topicDlq: process.env.KAFKA_TOPIC_DLQ || "email_dlq",
   groupId: process.env.KAFKA_GROUP_ID || "email-worker-group",
+  kafkaSsl: process.env.KAFKA_SSL === "true",
+  kafkaSasl: process.env.KAFKA_SASL_USERNAME ? {
+    mechanism: "scram-sha-256",
+    username: process.env.KAFKA_SASL_USERNAME,
+    password: process.env.KAFKA_SASL_PASSWORD,
+  } : null,
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT || 587),

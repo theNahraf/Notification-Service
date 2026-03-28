@@ -1,4 +1,4 @@
-const { nanoid } = require("nanoid");
+const crypto = require("crypto");
 const pool = require("../db/pool");
 const config = require("../config");
 const { getProducer } = require("../kafka/producer");
@@ -6,7 +6,7 @@ const eventService = require("./eventService");
 const suppressionService = require("./suppressionService");
 
 async function enqueueNotification(input) {
-  const id = `ntf_${nanoid(20)}`;
+  const id = `ntf_${crypto.randomBytes(15).toString("hex")}`;
   const channel = input.channel || "email";
 
   let subject = input.subject;

@@ -71,7 +71,7 @@ export default function Logs() {
   }
 
   async function exportLogs(format) {
-    const base = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    const base = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
     const token = localStorage.getItem("ntf_token");
     const params = new URLSearchParams({ format, limit: "2000", projectId: current.id });
     if (level) params.set("level", level);

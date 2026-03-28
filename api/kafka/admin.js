@@ -2,7 +2,12 @@ const { Kafka } = require("kafkajs");
 const config = require("../config");
 
 (async () => {
-  const kafka = new Kafka({ clientId: `${config.kafkaClientId}-admin`, brokers: config.kafkaBrokers });
+  const kafka = new Kafka({ 
+    clientId: `${config.kafkaClientId}-admin`, 
+    brokers: config.kafkaBrokers,
+    ssl: config.kafkaSsl,
+    sasl: config.kafkaSasl
+  });
   const admin = kafka.admin();
   await admin.connect();
   await admin.createTopics({

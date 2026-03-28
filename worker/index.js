@@ -16,8 +16,9 @@ app.get("/provider-health", (req, res) => {
   }
 });
 
-const healthServer = app.listen(3001, () => {
-  console.log("Worker health server listening on port 3001");
+const port = process.env.PORT || 3001;
+const healthServer = app.listen(port, () => {
+  console.log(`Worker health server listening on port ${port}`);
 });
 
 // Start background components

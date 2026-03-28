@@ -8,6 +8,13 @@ module.exports = {
   kafkaBrokers: (process.env.KAFKA_BROKERS || "localhost:9092").split(","),
   topicNotifications: process.env.KAFKA_TOPIC || "email_queue",
   topicDlq: process.env.KAFKA_TOPIC_DLQ || "email_dlq",
+  kafkaClientId: process.env.KAFKA_CLIENT_ID || "notifystack-api",
+  kafkaSsl: process.env.KAFKA_SSL === "true",
+  kafkaSasl: process.env.KAFKA_SASL_USERNAME ? {
+    mechanism: "scram-sha-256",
+    username: process.env.KAFKA_SASL_USERNAME,
+    password: process.env.KAFKA_SASL_PASSWORD,
+  } : null,
   rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 120),
   rateLimitWindow: Number(process.env.RATE_LIMIT_WINDOW || 60),
   // Razorpay

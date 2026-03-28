@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const { nanoid } = require("nanoid");
 const pool = require("../db/pool");
 
 function hashKey(raw) {
@@ -7,7 +6,8 @@ function hashKey(raw) {
 }
 
 function generateRawKey() {
-  return `ntf_live_${nanoid(32)}`;
+  const randomStr = crypto.randomBytes(24).toString("base64url");
+  return `ntf_live_${randomStr}`;
 }
 
 function extractPrefix(raw) {
