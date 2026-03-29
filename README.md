@@ -4,6 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 **NotifyStack** is a distributed notification engine that simplifies global multi-channel delivery (Email, SMS, Push, In-App). Built for high-availability, it features automatic provider failover, real-time analytics, and a "Zero-Config" SDK.
+Scalable Notification System...
 
 🚀 **Dashboard:** [https://notifystack.shop](https://notifystack.shop)  
 🔗 **Production API:** `https://api.notifystack.shop`
